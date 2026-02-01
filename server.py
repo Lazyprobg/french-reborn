@@ -6,9 +6,10 @@ def home():
 @app.route("/menu")
 def menu():
     return
-render_template("Menu.html")
+render_template("menu.html")
 
 app.run(host="0.0.0.0", port=5000)
+
 
 
 
