@@ -4,9 +4,10 @@ app = Flask(__name__)
 def home():
     return "index.html"
 @app.route("/menu")
-def home():
+def menu():
     return
 render_template("Menu.html")
 
 app.run(host="0.0.0.0", port=5000)
+
 
