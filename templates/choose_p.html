@@ -33,7 +33,7 @@
 
 <h1>Choisir une province</h1>
 
-<form method="POST" action="{{ url_for('choose_french_reborn') }}">
+<form method="POST" action="{{ url_for('choose_province') }}">
     <input type="hidden" name="username" value="{{ request.args.get('username', '') }}">
     <div class="province-box" onclick="this.parentElement.submit()">
         French Reborn
