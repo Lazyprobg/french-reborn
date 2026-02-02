@@ -16,7 +16,7 @@
         }
 
         .container {
-            width: 300px;
+            width: 320px;
             text-align: center;
         }
 
@@ -29,8 +29,15 @@
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
-            border: 1px solid #ccc;
+            border: 2px solid cyan;
             border-radius: 4px;
+            font-size: 14px;
+            background: transparent;
+            color: blue;
+        }
+
+        input::placeholder {
+            color: #666;
         }
 
         button {
@@ -48,6 +55,10 @@
             opacity: 0.4;
             cursor: not-allowed;
         }
+
+        button:hover:not(:disabled) {
+            background-color: rgba(0, 255, 255, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -63,35 +74,16 @@
             placeholder="Nom (5 à 20 caractères)"
             minlength="5"
             maxlength="20"
-            required>
+            required
+        >
 
         <input
             type="password"
             name="mot_de_passe"
             id="mot_de_passe"
             placeholder="Mot de passe"
-            required>
+            required
+        >
 
         <button type="submit" id="submitBtn" disabled>
-            Créer le compte
-        </button>
-    </form>
-</div>
-
-<script>
-    const nom = document.getElementById("nom");
-    const mdp = document.getElementById("mot_de_passe");
-    const btn = document.getElementById("submitBtn");
-
-    function checkForm() {
-        const nomValide = nom.value.length >= 5 && nom.value.length <= 20;
-        const mdpValide = mdp.value.length >= 1;
-        btn.disabled = !(nomValide && mdpValide);
-    }
-
-    nom.addEventListener("input", checkForm);
-    mdp.addEventListener("input", checkForm);
-</script>
-
-</body>
-</html>
+            Créer l
