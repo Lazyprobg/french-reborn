@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 import json
 import os
 import hashlib
 
 app = Flask(__name__)
+app.secret_key = "super-secret-key"  # requis pour session
 
 USERS_FILE = "users.json"
 
@@ -25,8 +26,7 @@ def hash_password(password):
 
 
 def find_user(username):
-    users = load_users()
-    for user in users:
+    for user in load_users():
         if user["username"] == username:
             return user
     return None
@@ -55,7 +55,9 @@ def connexion():
         if user["password_token"] != hash_password(password):
             return redirect(url_for("connexion"))
 
-        # Connexion réussie
+        # Stocker l'utilisateur connecté
+        session["username"] = username
+
         if user.get("province"):
             return redirect(url_for("channel_fre"))
 
@@ -64,34 +66,51 @@ def connexion():
     return render_template("connexion.html")
 
 
-@app.route("/choose_p")
+@app.route("/inscription", methods=["GET", "POST"])
+def inscription():
+    if request.method == "POST":
+        nom = request.form.get("nom")
+        mot_de_passe = request.form.get("mot_de_passe")
+
+        users = load_users()
+        new_id = users[-1]["id"] + 1 if users else 1
+
+        users.append({
+            "id": new_id,
+            "username": nom,
+            "password_token": hash_password(mot_de_passe),
+            "province": None
+        })
+
+        save_users(users)
+        return redirect(url_for("connexion"))
+
+    return render_template("inscription.html")
+
+
+@app.route("/choose_p", methods=["GET", "POST"])
 def choose_province():
+    if "username" not in session:
+        return redirect(url_for("connexion"))
+
+    if request.method == "POST":
+        users = load_users()
+        for user in users:
+            if user["username"] == session["username"]:
+                user["province"] = "French_Reborn"
+                break
+        save_users(users)
+        return redirect(url_for("channel_fre"))
+
     return render_template("choose_p.html")
-
-
-@app.route("/choose_p/french_reborn", methods=["POST"])
-def choose_french_reborn():
-    username = request.form.get("username")
-    users = load_users()
-
-    for user in users:
-        if user["username"] == username:
-            user["province"] = "French_Reborn"
-            break
-
-    save_users(users)
-    return redirect(url_for("channel_fre"))
 
 
 @app.route("/channel/French_Reborn")
 def channel_fre():
+    if "username" not in session:
+        return redirect(url_for("connexion"))
     return render_template("channel_Fre.html")
-
-@app.route("/inscription")
-def inscription():
-    return render_template("inscription.html")
 
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
-
