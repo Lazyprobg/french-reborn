@@ -1,25 +1,21 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta charset="UTF-8">
-<title>Channel French Reborn</title>
-<link rel="stylesheet" href="/static/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- IMPORTANT POUR MOBILE -->
+    <title>Channel French Reborn</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
 <div class="chat-container">
-    <div class="header">
-        <h2>French Reborn</h2>
-        <p>Membres connectés : <span id="member-count">0</span></p>
-    </div>
 
-    <div id="messages-container" class="messages-container"></div>
+    <div class="messages-container" id="messages-container"></div>
 
     <div class="chat-input-container">
-        <input type="text" id="message-input" placeholder="Tapez un message...">
-        <button id="emoji-button" class="emoji-button">😀</button>
-        <button id="send-button" class="send-button">Envoyer</button>
+        <input type="text" id="message-input" placeholder="Écris un message...">
+        <button class="emoji-button" id="emoji-button">😀</button>
+        <button class="send-button" id="send-button">Envoyer</button>
     </div>
 </div>
 
@@ -28,40 +24,14 @@ const messagesContainer = document.getElementById("messages-container");
 const input = document.getElementById("message-input");
 const sendButton = document.getElementById("send-button");
 const emojiButton = document.getElementById("emoji-button");
-const memberCountSpan = document.getElementById("member-count");
 
-let lastMessageDate = null;
-
-function formatDate(date){
-    const d=date.getDate().toString().padStart(2,"0");
-    const m=(date.getMonth()+1).toString().padStart(2,"0");
-    const y=date.getFullYear();
-    const h=date.getHours().toString().padStart(2,"0");
-    const min=date.getMinutes().toString().padStart(2,"0");
-    return `${d}/${m}/${y} ${h}:${min}`;
-}
-
-function sameMinute(d1,d2){
-    if(!d1||!d2) return false;
-    return d1.getFullYear()===d2.getFullYear() &&
-           d1.getMonth()===d2.getMonth() &&
-           d1.getDate()===d2.getDate() &&
-           d1.getHours()===d2.getHours() &&
-           d1.getMinutes()===d2.getMinutes();
-}
-
-function addMessage(username, role, text, date=new Date()){
-    if(!sameMinute(lastMessageDate,date)){
-        const dateDiv=document.createElement("div");
-        dateDiv.className="message-date";
-        dateDiv.textContent=formatDate(date);
-        messagesContainer.appendChild(dateDiv);
-    }
-    lastMessageDate=date;
-
-    const messageDiv=document.createElement("div");
-    messageDiv.className="message";
-    messageDiv.innerHTML=`
+// =====================
+// AJOUT MESSAGE AU DOM
+// =====================
+function addMessage(username, role, text, date = new Date()) {
+    const messageDiv = document.createElement("div");
+    messageDiv.className = "message";
+    messageDiv.innerHTML = `
         <div class="avatar"></div>
         <div class="message-content">
             <div class="role">${role}</div>
@@ -70,92 +40,64 @@ function addMessage(username, role, text, date=new Date()){
         </div>
     `;
     messagesContainer.appendChild(messageDiv);
-    messagesContainer.scrollTop=messagesContainer.scrollHeight;
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-function fetchMessages(){
+// =====================
+// CHARGEMENT ET RAFRAÎCHISSEMENT
+// =====================
+function fetchMessages() {
     fetch("/messages")
-        .then(res=>res.json())
-        .then(data=>{
-            messagesContainer.innerHTML="";
-            data.forEach(msg=>{
-                addMessage(msg.username, msg.role, msg.content, new Date(msg.timestamp));
-            });
+        .then(res => res.json())
+        .then(data => {
+            messagesContainer.innerHTML = "";
+            data.forEach(msg => addMessage(msg.username, msg.role, msg.content));
         });
 }
 
-function fetchMembers(){
-    fetch("/province_members")
-        .then(res=>res.json())
-        .then(data=>{
-            memberCountSpan.textContent=data.count;
-        });
-}
+// Rafraîchir toutes les 1 seconde
+setInterval(fetchMessages, 1000);
 
-function sendMessage(){
-    const text=input.value.trim();
-    if(!text) return;
-
-    fetch("/send_message",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({content:text})
+// =====================
+// ENVOI MESSAGE
+// =====================
+function sendMessage() {
+    const text = input.value.trim();
+    if (!text) return;
+    fetch("/send_message", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({content: text})
     })
-    .then(res=>res.json())
-    .then(data=>{
-        if(data.success){
-            input.value="";
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            input.value = "";
             fetchMessages();
-        }else{
-            alert("Erreur: "+(data.error||"Impossible d'envoyer le message"));
+        } else {
+            alert("Erreur: " + (data.error || "Impossible d'envoyer le message"));
         }
     });
 }
 
-sendButton.addEventListener("click",sendMessage);
-input.addEventListener("keypress",e=>{
-    if(e.key==="Enter"){
+sendButton.addEventListener("click", sendMessage);
+input.addEventListener("keypress", e => {
+    if (e.key === "Enter") {
         e.preventDefault();
         sendMessage();
     }
 });
 
-// Emojis
-const emojiList=["😀","😂","😍","😎","👍","💙","🚀","✈️"];
-emojiButton.addEventListener("click",()=>{
-    const menu=document.createElement("div");
-    menu.style.position="absolute";
-    menu.style.background="#fff";
-    menu.style.border="1px solid #aaa";
-    menu.style.padding="5px";
-    menu.style.display="flex";
-    menu.style.gap="5px";
-    emojiList.forEach(emoji=>{
-        const btn=document.createElement("button");
-        btn.textContent=emoji;
-        btn.style.fontSize="20px";
-        btn.onclick=()=>{
-            input.value+=emoji;
-            input.focus();
-            menu.remove();
-        };
-        menu.appendChild(btn);
-    });
-    document.body.appendChild(menu);
-    const rect=emojiButton.getBoundingClientRect();
-    menu.style.left=rect.left+"px";
-    menu.style.top=(rect.bottom+5)+"px";
-});
-
-// Rafraîchissement automatique toutes les 2 secondes
-setInterval(()=>{
-    fetchMessages();
-    fetchMembers();
-}, 2000);
-
-document.addEventListener("DOMContentLoaded",()=>{
-    fetchMessages();
-    fetchMembers();
+// =====================
+// EMOJIS
+// =====================
+emojiButton.addEventListener("click", () => {
+    const emojiList = ["😀","😂","😍","😎","👍","💙","🚀","✈️"];
+    const chosen = prompt("Choisis un emoji:\n" + emojiList.join(" "));
+    if (chosen) {
+        input.value += chosen;
+        input.focus();
+    }
 });
 </script>
 
