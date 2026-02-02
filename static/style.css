@@ -248,3 +248,22 @@ body {
         max-width: 85%;
     }
 }
+
+/* ============================= */
+/* RESPONSIVE POUR CONNEXION / INSCRIPTION */
+/* ============================= */
+
+@media (max-width: 768px) {
+    .container {
+        padding: 35px 20px;
+        margin: 10px;
+    }
+    input, button {
+        width: 100%;
+        font-size: 1em;
+    }
+    .chat-container {
+        border-radius: 0;
+        height: 100vh;
+    }
+}
