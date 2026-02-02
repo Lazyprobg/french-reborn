@@ -2,22 +2,36 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>French Reborn</title>
+    <title>French Reborn — Province</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
-<div class="container">
-    <h1 class="title">Bienvenue sur French Reborn</h1>
+<div class="chat-container">
 
-    <p style="margin-bottom:30px; font-size:1.1em;">
-        Vous êtes maintenant connecté à votre province.
-    </p>
+    <!-- HISTORIQUE DES MESSAGES -->
+    <div id="messages" class="messages-container">
+        <!-- Messages injectés par JS -->
+    </div>
 
-    <a href="{{ url_for('menu') }}" class="welcome-button">
-        Retour au menu
-    </a>
+    <!-- BARRE D'ENVOI -->
+    <div class="chat-input-container">
+
+        <button id="emoji-button" class="emoji-button">😊</button>
+
+        <input
+            type="text"
+            id="message-input"
+            placeholder="Écrire un message..."
+            autocomplete="off"
+        >
+
+        <button id="send-button" class="send-button">✈️</button>
+    </div>
 </div>
 
+<script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
