@@ -2,41 +2,29 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>French Reborn — Province</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <title>French Reborn - Chat</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+    <div class="container chat-container">
+        <div id="messages-container" class="messages-container">
+            <!-- Messages chargés dynamiquement -->
+        </div>
 
-<div class="chat-container">
-
-    <!-- HISTORIQUE DES MESSAGES -->
-    <div id="messages" class="messages-container">
-        <!-- Messages injectés par JS -->
+        <div class="input-container">
+            <button id="emoji-button" class="emoji-button">😊</button>
+            <textarea id="message-input" placeholder="Écris un message..."></textarea>
+            <button id="send-button" class="send-button">✈️</button>
+        </div>
     </div>
 
-    <!-- BARRE D'ENVOI -->
-    <div class="chat-input-container">
+    <!-- Passer l'utilisateur et son rôle au JS -->
+    <script>
+        const CURRENT_USER = "{{ session['username'] }}";
+        const CURRENT_ROLE = "{{ session.get('role', 'Citoyen') }}";
+    </script>
 
-        <button id="emoji-button" class="emoji-button">😊</button>
-
-        <input
-            type="text"
-            id="message-input"
-            placeholder="Écrire un message..."
-            autocomplete="off"
-        >
-
-        <button id="send-button" class="send-button">✈️</button>
-    </div>
-</div>
-
-<script src="{{ url_for('static', filename='script.js') }}"></script>
-<script>
-    const CURRENT_USER = "{{ session['username'] }}";
-    const CURRENT_ROLE = "{{ session.get('role', 'Citoyen') }}";
-</script>
-<script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
