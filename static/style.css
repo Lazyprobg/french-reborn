@@ -1,25 +1,221 @@
-/* Champ texte mobile */
-#message-input {
-    width: 100% !important;
-    font-size: 1em !important;
-    padding: 12px !important;
+/* ==========================
+   GLOBAL
+========================== */
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
 }
 
-/* Chat responsive pour mobile */
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+/* ==========================
+   FORMULAIRES (connexion / inscription)
+========================== */
+form {
+    display: flex;
+    flex-direction: column;
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+form input {
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+form button {
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    background-color: #0d47a1;
+    color: white;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+form button:hover {
+    background-color: #1565c0;
+}
+
+/* ==========================
+   CHAT CONTAINER
+========================== */
+.chat-container {
+    max-width: 800px;
+    margin: 20px auto;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    height: 80vh;
+}
+
+/* ==========================
+   MESSAGES
+========================== */
+.messages-container {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+
+.message {
+    display: flex;
+    margin-bottom: 10px;
+    align-items: flex-start;
+}
+
+.message .avatar {
+    width: 40px;
+    height: 40px;
+    background-color: #ccc;
+    border-radius: 50%;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+.message .message-content {
+    max-width: 90%;
+    word-wrap: break-word;
+}
+
+.message .role {
+    font-weight: bold;
+}
+
+.message .username {
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+.message .text {
+    margin-top: 2px;
+}
+
+/* Date separator */
+.message-date {
+    text-align: center;
+    font-size: 12px;
+    color: #777;
+    margin: 10px 0;
+}
+
+/* ==========================
+   CHAT INPUT
+========================== */
+.chat-input-container {
+    display: flex;
+    gap: 5px;
+}
+
+#message-input {
+    flex: 1;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+.send-button, .emoji-button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #0d47a1;
+    color: white;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.send-button:hover, .emoji-button:hover {
+    background-color: #1565c0;
+}
+
+/* ==========================
+   ADMIN BUTTONS
+========================== */
+#admin-controls {
+    display: flex;
+    gap: 5px;
+}
+
+#mute-btn, #unmute-btn {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #ff5722;
+    color: white;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+#unmute-btn {
+    background-color: #4caf50;
+}
+
+#mute-btn:hover {
+    background-color: #e64a19;
+}
+
+#unmute-btn:hover {
+    background-color: #388e3c;
+}
+
+/* ==========================
+   RESPONSIVE
+========================== */
 @media (max-width: 768px) {
+
+    /* Formulaire centrage mobile */
+    form {
+        margin: 20px 10px;
+        padding: 15px;
+    }
+
+    /* Chat container full screen */
     .chat-container {
+        width: 100%;
+        height: 100vh;
         padding: 10px;
         border-radius: 0;
-        height: 100vh;
     }
+
     .messages-container {
-        max-height: calc(100vh - 120px);
+        max-height: calc(100vh - 140px);
     }
+
     .chat-input-container {
         flex-direction: column;
         gap: 5px;
     }
+
     .send-button, .emoji-button {
         width: 100%;
+    }
+
+    #message-input {
+        width: 100% !important;
+        font-size: 1em !important;
+        padding: 12px !important;
     }
 }
