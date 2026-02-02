@@ -2,3 +2,4 @@ flask
 psycopg2-binary
 sqlalchemy
 flask-sqlalchemy
+Flask-SQLAlchemy==3.0.3
