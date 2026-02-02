@@ -57,8 +57,7 @@ sendButton.addEventListener("click", () => {
     if (!text) return;
 
     // TEMPORAIRE (plus tard backend)
-    addMessage("Utilisateur", "Citoyen", text);
-
+    addMessage(CURRENT_USER, CURRENT_ROLE, text);
     input.value = "";
 });
 
