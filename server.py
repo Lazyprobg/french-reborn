@@ -24,6 +24,14 @@ def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 
+def find_user(username):
+    users = load_users()
+    for user in users:
+        if user["username"] == username:
+            return user
+    return None
+
+
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -36,33 +44,48 @@ def menu():
 
 @app.route("/connexion", methods=["GET", "POST"])
 def connexion():
+    if request.method == "POST":
+        username = request.form.get("identifiant")
+        password = request.form.get("mot_de_passe")
+
+        user = find_user(username)
+        if not user:
+            return redirect(url_for("connexion"))
+
+        if user["password_token"] != hash_password(password):
+            return redirect(url_for("connexion"))
+
+        # Connexion réussie
+        if user.get("province"):
+            return redirect(url_for("channel_fre"))
+
+        return redirect(url_for("choose_province"))
+
     return render_template("connexion.html")
 
 
-@app.route("/inscription", methods=["GET", "POST"])
-def inscription():
-    if request.method == "POST":
-        nom = request.form.get("nom")
-        mot_de_passe = request.form.get("mot_de_passe")
+@app.route("/choose_p")
+def choose_province():
+    return render_template("choose_p.html")
 
-        if not (5 <= len(nom) <= 20) or len(mot_de_passe) < 1:
-            return redirect(url_for("inscription"))
 
-        users = load_users()
-        new_id = users[-1]["id"] + 1 if users else 1
+@app.route("/choose_p/french_reborn", methods=["POST"])
+def choose_french_reborn():
+    username = request.form.get("username")
+    users = load_users()
 
-        new_user = {
-            "id": new_id,
-            "username": nom,
-            "password_token": hash_password(mot_de_passe)
-        }
+    for user in users:
+        if user["username"] == username:
+            user["province"] = "French_Reborn"
+            break
 
-        users.append(new_user)
-        save_users(users)
+    save_users(users)
+    return redirect(url_for("channel_fre"))
 
-        return redirect(url_for("connexion"))
 
-    return render_template("inscription.html")
+@app.route("/channel/French_Reborn")
+def channel_fre():
+    return render_template("channel_Fre.html")
 
 
 if __name__ == "__main__":
