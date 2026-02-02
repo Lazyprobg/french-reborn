@@ -33,5 +33,10 @@
 </div>
 
 <script src="{{ url_for('static', filename='script.js') }}"></script>
+<script>
+    const CURRENT_USER = "{{ session['username'] }}";
+    const CURRENT_ROLE = "{{ session.get('role', 'Citoyen') }}";
+</script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
