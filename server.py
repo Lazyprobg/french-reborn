@@ -10,10 +10,10 @@ import os
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "super-secret-key")
 
-# DATABASE_URL pour Render
+# DATABASE_URL obligatoire pour Render
 uri = os.environ.get("DATABASE_URL")
 if not uri:
-    uri = "sqlite:///data.db"  # fallback local pour tests
+    raise RuntimeError("DATABASE_URL non défini. Configure ta base PostgreSQL sur Render.")
 
 # Postgres URI correction
 if uri.startswith("postgres://"):
@@ -50,12 +50,12 @@ class Message(db.Model):
 
     user = db.relationship("User", backref=db.backref("messages", lazy=True))
 
-# Crée les tables
+# Crée les tables si elles n'existent pas
 with app.app_context():
     db.create_all()
 
 # ==========================
-# ROUTES PRINCIPALES
+# ROUTES (inchangées)
 # ==========================
 @app.route("/")
 def home():
