@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription - French Reborn</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            width: 300px;
+            text-align: center;
+        }
+
+        h1 {
+            color: blue;
+            margin-bottom: 25px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            font-size: 15px;
+            color: blue;
+            border: 2px solid cyan;
+            border-radius: 4px;
+            background-color: transparent;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Inscription</h1>
+
+    <form method="POST">
+        <input
+            type="text"
+            name="nom"
+            id="nom"
+            placeholder="Nom (5 à 20 caractères)"
+            minlength="5"
+            maxlength="20"
+            required>
+
+        <input
+            type="password"
+            name="mot_de_passe"
+            id="mot_de_passe"
+            placeholder="Mot de passe"
+            required>
+
+        <button type="submit" id="submitBtn" disabled>
+            Créer le compte
+        </button>
+    </form>
+</div>
+
+<script>
+    const nom = document.getElementById("nom");
+    const mdp = document.getElementById("mot_de_passe");
+    const btn = document.getElementById("submitBtn");
+
+    function checkForm() {
+        const nomValide = nom.value.length >= 5 && nom.value.length <= 20;
+        const mdpValide = mdp.value.length >= 1;
+        btn.disabled = !(nomValide && mdpValide);
+    }
+
+    nom.addEventListener("input", checkForm);
+    mdp.addEventListener("input", checkForm);
+</script>
+
+</body>
+</html>
