@@ -1,91 +1,100 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+/* ============================= */
+/* CHAT - CHANNEL PROVINCE */
+/* ============================= */
+
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100%;
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
 }
 
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%);
-    min-height: 100vh;
+.messages-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+/* DATE */
+.message-date {
+    text-align: center;
+    font-size: 0.8em;
+    color: #555;
+    margin: 15px 0;
+}
+
+/* MESSAGE */
+.message {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background-color: #0d47a1;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.message-content {
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 12px;
+    padding: 10px 15px;
+    max-width: 70%;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.role {
+    font-size: 0.75em;
+    color: #0d47a1;
+    font-weight: bold;
+}
+
+.username {
+    font-size: 0.85em;
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+.text {
+    font-size: 0.95em;
+    word-wrap: break-word;
+}
+
+/* BARRE D'ENVOI */
+.chat-input-container {
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 10px;
+    padding-top: 10px;
 }
 
-.container {
-    text-align: center;
-    background: rgba(255, 255, 255, 0.2);
-    padding: 50px;
-    border-radius: 20px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    animation: fadeInUp 0.8s ease-out;
+#message-input {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1em;
 }
 
-/* --- TITRE FRENCH REBORN --- */
-.title {
-    color: #2196f3; /* Bleu principal */
-    font-size: 3em;
-    margin-bottom: 40px;
-    -webkit-text-stroke: 2px #0d47a1; /* Contour bleu foncé */
-    text-shadow: 2px 2px 6px rgba(13, 71, 161, 0.3);
-    letter-spacing: 2px;
-}
-
-/* --- BOUTON --- */
-.welcome-button {
-    display: inline-block;
-    text-decoration: none;
-    background-color: #87ceeb; /* Bleu ciel */
-    border: 3px solid #00ffff; /* Contour cyan */
-    color: #2196f3; /* Même couleur que le titre */
-    padding: 15px 50px;
-    font-size: 1.3em;
-    font-weight: bold;
-    border-radius: 10px;
+.emoji-button,
+.send-button {
+    padding: 10px 14px;
+    font-size: 1.2em;
+    border-radius: 8px;
+    border: 2px solid cyan;
+    background-color: #87ceeb;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 6px 20px rgba(0, 255, 255, 0.3);
+    transition: 0.2s;
 }
 
-.welcome-button:hover {
+.emoji-button:hover,
+.send-button:hover {
     background-color: #b3e5fc;
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(0, 255, 255, 0.5);
-}
-
-.welcome-button:active {
-    transform: translateY(0);
-    box-shadow: 0 4px 10px rgba(0, 255, 255, 0.3);
-}
-
-/* --- ANIMATION D’ENTRÉE --- */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* --- Responsive --- */
-@media (max-width: 768px) {
-    .container {
-        padding: 30px 20px;
-        margin: 20px;
-    }
-
-    .title {
-        font-size: 2.2em;
-    }
-
-    .welcome-button {
-        padding: 12px 35px;
-        font-size: 1.1em;
-    }
 }
