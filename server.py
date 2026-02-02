@@ -87,6 +87,11 @@ def choose_french_reborn():
 def channel_fre():
     return render_template("channel_Fre.html")
 
+@app.route("/inscription")
+def inscription():
+    return render_template("inscription.html")
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
