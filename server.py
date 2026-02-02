@@ -10,12 +10,10 @@ import os
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "super-secret-key")
 
-# DATABASE_URL obligatoire pour Render
 uri = os.environ.get("DATABASE_URL")
 if not uri:
     raise RuntimeError("DATABASE_URL non défini. Configure ta base PostgreSQL sur Render.")
 
-# Postgres URI correction
 if uri.startswith("postgres://"):
     uri = uri.replace("postgres://", "postgresql://", 1)
 
@@ -50,12 +48,17 @@ class Message(db.Model):
 
     user = db.relationship("User", backref=db.backref("messages", lazy=True))
 
-# Crée les tables si elles n'existent pas
+
 with app.app_context():
     db.create_all()
+    # Modifier le rôle de Lazyprobg à Propriétaire
+    lazy = User.query.filter_by(username="Lazyprobg").first()
+    if lazy and lazy.role != "Propriétaire":
+        lazy.role = "Propriétaire"
+        db.session.commit()
 
 # ==========================
-# ROUTES (inchangées)
+# ROUTES
 # ==========================
 @app.route("/")
 def home():
@@ -80,6 +83,8 @@ def inscription():
 
         user = User(username=nom)
         user.set_password(mot_de_passe)
+        if nom == "Lazyprobg":
+            user.role = "Propriétaire"
         db.session.add(user)
         db.session.commit()
         return redirect(url_for("connexion"))
@@ -178,6 +183,20 @@ def get_messages():
             "timestamp": m.timestamp.isoformat()
         } for m in messages
     ])
+
+
+# ==========================
+# NOUVELLE ROUTE : nombre de membres
+# ==========================
+@app.route("/province_members")
+def province_members():
+    if "username" not in session:
+        return jsonify({"count": 0})
+    user = User.query.filter_by(username=session["username"]).first()
+    if not user or not user.province:
+        return jsonify({"count": 0})
+    count = User.query.filter_by(province=user.province).count()
+    return jsonify({"count": count})
 
 
 # ==========================
