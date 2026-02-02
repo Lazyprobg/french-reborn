@@ -9,11 +9,23 @@ app.secret_key = "super-secret-key"  # requis pour session
 USERS_FILE = "users.json"
 
 
+# ---------- UTILITAIRES ----------
+
+def init_users_file():
+    """Crée users.json s'il n'existe pas ou s'il est vide"""
+    if not os.path.exists(USERS_FILE) or os.stat(USERS_FILE).st_size == 0:
+        with open(USERS_FILE, "w", encoding="utf-8") as f:
+            json.dump([], f)
+
+
 def load_users():
-    if not os.path.exists(USERS_FILE):
+    init_users_file()
+    try:
+        with open(USERS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except json.JSONDecodeError:
+        print("❌ ERREUR: users.json corrompu")
         return []
-    with open(USERS_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
 
 
 def save_users(users):
@@ -27,10 +39,12 @@ def hash_password(password):
 
 def find_user(username):
     for user in load_users():
-        if user["username"] == username:
+        if user.get("username") == username:
             return user
     return None
 
+
+# ---------- ROUTES ----------
 
 @app.route("/")
 def home():
@@ -48,6 +62,9 @@ def connexion():
         username = request.form.get("identifiant")
         password = request.form.get("mot_de_passe")
 
+        if not username or not password:
+            return redirect(url_for("connexion"))
+
         user = find_user(username)
         if not user:
             return redirect(url_for("connexion"))
@@ -55,7 +72,8 @@ def connexion():
         if user["password_token"] != hash_password(password):
             return redirect(url_for("connexion"))
 
-        # Stocker l'utilisateur connecté
+        # Stockage sécurisé de la session
+        session.clear()
         session["username"] = username
 
         if user.get("province"):
@@ -72,7 +90,14 @@ def inscription():
         nom = request.form.get("nom")
         mot_de_passe = request.form.get("mot_de_passe")
 
+        if not nom or not mot_de_passe:
+            return redirect(url_for("inscription"))
+
         users = load_users()
+
+        if find_user(nom):
+            return redirect(url_for("inscription"))
+
         new_id = users[-1]["id"] + 1 if users else 1
 
         users.append({
@@ -99,6 +124,7 @@ def choose_province():
             if user["username"] == session["username"]:
                 user["province"] = "French_Reborn"
                 break
+
         save_users(users)
         return redirect(url_for("channel_fre"))
 
@@ -112,5 +138,8 @@ def channel_fre():
     return render_template("channel_Fre.html")
 
 
+# ---------- LANCEMENT ----------
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    init_users_file()
+    app.run(host="0.0.0.0", port=5000, debug=True)
