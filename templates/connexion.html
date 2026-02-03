@@ -2,16 +2,23 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <title>Connexion – French Reborn</title>
+
+    <!-- Responsive mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion - French Reborn</title>
+
+    <!-- Style principal -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
+
     <div class="container">
         <h1 class="title">Connexion</h1>
 
+        <!-- FORMULAIRE DE CONNEXION -->
         <form action="{{ url_for('login') }}" method="POST" autocomplete="off">
+
             <input
                 type="text"
                 name="username"
@@ -31,10 +38,12 @@
             </button>
         </form>
 
-        <p style="margin-top: 20px;">
-    Pas encore inscrit ?
-    <a href="/inscription">Créer un compte</a>
+        <!-- LIEN INSCRIPTION (HORS FORMULAIRE) -->
+        <p class="switch-auth">
+            Pas encore inscrit ?
+            <a href="{{ url_for('inscription') }}">Créer un compte</a>
         </p>
     </div>
+
 </body>
 </html>
