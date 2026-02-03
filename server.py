@@ -3,25 +3,17 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import os
 
-# =========================
-# APP INIT
-# =========================
-
 app = Flask(__name__)
-
-app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
+app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
 
 # =========================
-# DATABASE CONFIG (SAFE)
+# DATABASE
 # =========================
 
 database_url = os.environ.get("DATABASE_URL")
-
-if database_url:
-    if database_url.startswith("postgres://"):
-        database_url = database_url.replace("postgres://", "postgresql://", 1)
-else:
-    # ✅ FALLBACK LOCAL / RENDER SAFE
+if database_url and database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+if not database_url:
     database_url = "sqlite:///database.db"
 
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
@@ -51,57 +43,28 @@ class MutedUser(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True)
 
-
-class Role(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    province = db.Column(db.String(100), nullable=False)
-
-
-class RolePermission(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    role_id = db.Column(db.Integer, db.ForeignKey("role.id"), nullable=False)
-    permission = db.Column(db.String(50), nullable=False)
-
-
-class UserRole(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    role_id = db.Column(db.Integer, db.ForeignKey("role.id"), nullable=False)
-
 # =========================
-# INIT DB (IMPORTANT)
+# INIT DB
 # =========================
 
 with app.app_context():
     db.create_all()
 
 # =========================
-# UTILS
+# ROUTES
 # =========================
 
-def is_lazy():
-    return session.get("username") == "Lazyprobg"
+@app.route("/")
+def index():
+    return render_template("index.html")
 
 
-def user_permissions(user):
-    perms = set()
-    roles = (
-        db.session.query(Role)
-        .join(UserRole)
-        .filter(UserRole.user_id == user.id)
-        .all()
-    )
-    for r in roles:
-        for p in RolePermission.query.filter_by(role_id=r.id).all():
-            perms.add(p.permission)
-    return perms
+@app.route("/menu")
+def menu():
+    return render_template("menu.html")
 
-# =========================
-# AUTH
-# =========================
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         username = request.form.get("username")
@@ -110,28 +73,19 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and user.password == password:
             session["username"] = user.username
-            session["province"] = user.province
             return redirect("/channel")
 
     return render_template("connexion.html")
 
 
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect("/")
-
-# =========================
-# CHAT
-# =========================
-
 @app.route("/channel")
 def channel():
     if "username" not in session:
-        return redirect("/")
+        return redirect("/login")
+
     return render_template(
         "channel_Fre.html",
-        current_user=session["username"]
+        username=session["username"]
     )
 
 
@@ -143,8 +97,7 @@ def messages():
     return jsonify([
         {
             "username": m.username,
-            "content": m.content,
-            "timestamp": m.timestamp.isoformat()
+            "content": m.content
         }
         for m in msgs if m.username not in muted
     ])
@@ -155,24 +108,18 @@ def send():
     if "username" not in session:
         return "", 403
 
-    if MutedUser.query.filter_by(username=session["username"]).first():
-        return "", 403
-
     content = request.json.get("content", "").strip()
     if not content:
         return "", 400
 
-    msg = Message(
-        username=session["username"],
-        content=content
-    )
+    if MutedUser.query.filter_by(username=session["username"]).first():
+        return "", 403
+
+    msg = Message(username=session["username"], content=content)
     db.session.add(msg)
     db.session.commit()
     return "", 204
 
-# =========================
-# START SERVER
-# =========================
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
