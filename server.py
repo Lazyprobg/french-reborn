@@ -3,16 +3,22 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import os
 
+# =========================
+# APP INIT
+# =========================
+
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
+app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
 
 # =========================
-# DATABASE
+# DATABASE CONFIG
 # =========================
 
 database_url = os.environ.get("DATABASE_URL")
+
 if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
+
 if not database_url:
     database_url = "sqlite:///database.db"
 
@@ -51,7 +57,7 @@ with app.app_context():
     db.create_all()
 
 # =========================
-# ROUTES
+# ROUTES - NAVIGATION
 # =========================
 
 @app.route("/")
@@ -63,6 +69,9 @@ def index():
 def menu():
     return render_template("menu.html")
 
+# =========================
+# AUTH
+# =========================
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -71,12 +80,52 @@ def login():
         password = request.form.get("password")
 
         user = User.query.filter_by(username=username).first()
+
         if user and user.password == password:
             session["username"] = user.username
+            session["province"] = user.province
             return redirect("/channel")
+
+        # Login échoué → retour page connexion
+        return render_template("connexion.html")
 
     return render_template("connexion.html")
 
+
+@app.route("/inscription", methods=["GET", "POST"])
+def inscription():
+    if request.method == "POST":
+        username = request.form.get("nom")
+        password = request.form.get("mot_de_passe")
+
+        if User.query.filter_by(username=username).first():
+            return "Utilisateur déjà existant", 400
+
+        user = User(
+            username=username,
+            password=password,
+            province="French Reborn"
+        )
+
+        db.session.add(user)
+        db.session.commit()
+
+        session["username"] = user.username
+        session["province"] = user.province
+
+        return redirect("/channel")
+
+    return render_template("inscription.html")
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
+
+# =========================
+# CHAT
+# =========================
 
 @app.route("/channel")
 def channel():
@@ -97,7 +146,8 @@ def messages():
     return jsonify([
         {
             "username": m.username,
-            "content": m.content
+            "content": m.content,
+            "timestamp": m.timestamp.isoformat()
         }
         for m in msgs if m.username not in muted
     ])
@@ -108,18 +158,25 @@ def send():
     if "username" not in session:
         return "", 403
 
+    if MutedUser.query.filter_by(username=session["username"]).first():
+        return "", 403
+
     content = request.json.get("content", "").strip()
     if not content:
         return "", 400
 
-    if MutedUser.query.filter_by(username=session["username"]).first():
-        return "", 403
+    msg = Message(
+        username=session["username"],
+        content=content
+    )
 
-    msg = Message(username=session["username"], content=content)
     db.session.add(msg)
     db.session.commit()
     return "", 204
 
+# =========================
+# START SERVER
+# =========================
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
