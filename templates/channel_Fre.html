@@ -13,23 +13,9 @@
 <input id="msg">
 <button onclick="send()">Envoyer</button>
 
-<div id="admin-controls" style="display:none">
-    <button onclick="mute()">Mute</button>
-    <button onclick="unmute()">Unmute</button>
-</div>
-
-<div id="lazy-controls" style="display:none">
-    <button onclick="createRole()">Créer rôle</button>
-    <button onclick="assignRole()">Assigner rôle</button>
-</div>
-
 <script>
 const chat = document.getElementById("chat");
 const msg = document.getElementById("msg");
-const adminControls = document.getElementById("admin-controls");
-const lazyControls = document.getElementById("lazy-controls");
-
-const currentUser = "{{ username }}";
 
 function load(){
     fetch("/messages")
@@ -37,77 +23,20 @@ function load(){
         .then(d => {
             chat.innerHTML = "";
             d.forEach(m => {
-                chat.innerHTML += `<div><b>${m.user}</b>: ${m.content}</div>`;
+                chat.innerHTML += `<div><b>${m.username}</b>: ${m.content}</div>`;
             });
         });
 }
 
 function send(){
     if(!msg.value.trim()) return;
-    fetch("/send",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({content:msg.value})
+    fetch("/send", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({content: msg.value})
     });
-    msg.value="";
+    msg.value = "";
 }
-
-function mute(){
-    const u = prompt("Utilisateur à mute");
-    if(!u) return;
-    fetch("/mute_user",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({username:u})
-    });
-}
-
-function unmute(){
-    const u = prompt("Utilisateur à unmute");
-    if(!u) return;
-    fetch("/unmute_user",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({username:u})
-    });
-}
-
-function createRole(){
-    const name = prompt("Nom du rôle");
-    if(!name) return;
-    const perms = prompt("Permissions (mute,unmute)")?.split(",") || [];
-    fetch("/create_role",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({name, permissions: perms})
-    });
-}
-
-async function assignRole(){
-    const user = prompt("Utilisateur");
-    if(!user) return;
-    const roles = await fetch("/roles").then(r=>r.json());
-    const choice = prompt(
-        roles.map(r => `${r.id}:${r.name}`).join("\n")
-    );
-    if(!choice) return;
-    fetch("/assign_role",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({username:user, role_id:choice})
-    });
-}
-
-fetch("/my_permissions")
-    .then(r => r.json())
-    .then(p => {
-        if(p.includes("mute") || p.includes("unmute")){
-            adminControls.style.display = "block";
-        }
-        if(currentUser === "Lazyprobg"){
-            lazyControls.style.display = "block";
-        }
-    });
 
 setInterval(load, 1500);
 load();
