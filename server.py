@@ -1,7 +1,8 @@
 from flask import Flask, render_template, request, redirect, session, jsonify
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import os
+
+from models import db, User, Message, MutedUser
 
 # =========================
 # APP INIT
@@ -25,29 +26,7 @@ if not database_url:
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-db = SQLAlchemy(app)
-
-# =========================
-# MODELS
-# =========================
-
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
-    province = db.Column(db.String(100), nullable=False)
-
-
-class Message(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50))
-    content = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-
-
-class MutedUser(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True)
+db.init_app(app)
 
 # =========================
 # INIT DB
@@ -69,6 +48,12 @@ def index():
 def menu():
     return render_template("menu.html")
 
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
+
 # =========================
 # AUTH
 # =========================
@@ -86,8 +71,7 @@ def login():
             session["province"] = user.province
             return redirect("/channel")
 
-        # Login échoué → retour page connexion
-        return render_template("connexion.html")
+        return render_template("connexion.html", error=True)
 
     return render_template("connexion.html")
 
@@ -99,7 +83,7 @@ def inscription():
         password = request.form.get("mot_de_passe")
 
         if User.query.filter_by(username=username).first():
-            return "Utilisateur déjà existant", 400
+            return render_template("inscription.html", error=True)
 
         user = User(
             username=username,
@@ -116,12 +100,6 @@ def inscription():
         return redirect("/channel")
 
     return render_template("inscription.html")
-
-
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect("/")
 
 # =========================
 # CHAT
@@ -140,16 +118,17 @@ def channel():
 
 @app.route("/messages")
 def messages():
+    muted_ids = {m.user_id for m in MutedUser.query.all()}
+
     msgs = Message.query.order_by(Message.timestamp.asc()).all()
-    muted = {m.username for m in MutedUser.query.all()}
 
     return jsonify([
         {
-            "username": m.username,
+            "username": m.user.username,
             "content": m.content,
             "timestamp": m.timestamp.isoformat()
         }
-        for m in msgs if m.username not in muted
+        for m in msgs if m.user_id not in muted_ids
     ])
 
 
@@ -158,7 +137,11 @@ def send():
     if "username" not in session:
         return "", 403
 
-    if MutedUser.query.filter_by(username=session["username"]).first():
+    user = User.query.filter_by(username=session["username"]).first()
+    if not user:
+        return "", 403
+
+    if MutedUser.query.filter_by(user_id=user.id).first():
         return "", 403
 
     content = request.json.get("content", "").strip()
@@ -166,7 +149,7 @@ def send():
         return "", 400
 
     msg = Message(
-        username=session["username"],
+        user_id=user.id,
         content=content
     )
 
