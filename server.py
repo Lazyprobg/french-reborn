@@ -64,17 +64,22 @@ def login():
         username = request.form.get("username")
         password = request.form.get("password")
 
+        if not username or not password:
+            return render_template("connexion.html")
+
         user = User.query.filter_by(username=username).first()
 
-        if user and user.password == password:
-            session["username"] = user.username
-            session["province"] = user.province
-            return redirect("/channel")
+        if not user:
+            return render_template("connexion.html")
 
-        return render_template("connexion.html", error=True)
+        if user.password != password:
+            return render_template("connexion.html")
+
+        session["username"] = user.username
+        session["province"] = user.province
+        return redirect("/channel")
 
     return render_template("connexion.html")
-
 
 @app.route("/inscription", methods=["GET", "POST"])
 def inscription():
@@ -164,3 +169,4 @@ def send():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
