@@ -1,15 +1,21 @@
 // ==============================
-// ELEMENTS DOM
+// SAFE DOM CHECK
 // ==============================
 const messagesContainer = document.getElementById("messages-container");
 const input = document.getElementById("message-input");
 const sendButton = document.getElementById("send-button");
 const emojiButton = document.getElementById("emoji-button");
 
+// Si on n'est PAS sur la page du chat → on stoppe le script
+if (!messagesContainer || !input || !sendButton || !emojiButton) {
+    console.log("script.js chargé hors du chat → arrêt");
+    return;
+}
+
 // ==============================
 // AJOUT MESSAGE
 // ==============================
-function addMessage(username, text){
+function addMessage(username, text) {
     const div = document.createElement("div");
     div.className = "message";
     div.innerHTML = `<b>${username}</b> : ${text}`;
@@ -20,7 +26,7 @@ function addMessage(username, text){
 // ==============================
 // CHARGEMENT DES MESSAGES
 // ==============================
-function loadMessages(){
+function loadMessages() {
     fetch("/messages")
         .then(res => res.json())
         .then(data => {
@@ -34,14 +40,14 @@ function loadMessages(){
 // ==============================
 // ENVOI MESSAGE
 // ==============================
-function sendMessage(){
+function sendMessage() {
     const text = input.value.trim();
-    if(!text) return;
+    if (!text) return;
 
     fetch("/send", {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({content: text})
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: text })
     });
 
     input.value = "";
@@ -52,8 +58,8 @@ function sendMessage(){
 // ==============================
 sendButton.addEventListener("click", sendMessage);
 
-input.addEventListener("keypress", e => {
-    if(e.key === "Enter"){
+input.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
         e.preventDefault();
         sendMessage();
     }
@@ -62,7 +68,7 @@ input.addEventListener("keypress", e => {
 emojiButton.addEventListener("click", () => {
     const emojis = ["😀","😂","😍","😎","👍","💙","🚀","🔥"];
     const chosen = prompt("Choisis un emoji :\n" + emojis.join(" "));
-    if(chosen){
+    if (chosen) {
         input.value += chosen;
         input.focus();
     }
