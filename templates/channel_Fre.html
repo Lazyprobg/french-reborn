@@ -2,45 +2,32 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>French Reborn</title>
+    <title>French Reborn - Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
-<h3>Connecté en tant que {{ username }}</h3>
+<div class="chat-container">
+    <h3>Connecté en tant que {{ username }}</h3>
 
-<div id="chat"></div>
+    <div class="messages-container" id="messages-container"></div>
 
-<input id="msg">
-<button onclick="send()">Envoyer</button>
+    <div class="chat-input-container">
+        <input
+            type="text"
+            id="message-input"
+            placeholder="Écrire un message..."
+        >
+        <button class="send-button" id="send-button">Envoyer</button>
+        <button class="emoji-button" id="emoji-button">😀</button>
+    </div>
+</div>
 
 <script>
-const chat = document.getElementById("chat");
-const msg = document.getElementById("msg");
-
-function load(){
-    fetch("/messages")
-        .then(r => r.json())
-        .then(d => {
-            chat.innerHTML = "";
-            d.forEach(m => {
-                chat.innerHTML += `<div><b>${m.username}</b>: ${m.content}</div>`;
-            });
-        });
-}
-
-function send(){
-    if(!msg.value.trim()) return;
-    fetch("/send", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({content: msg.value})
-    });
-    msg.value = "";
-}
-
-setInterval(load, 1500);
-load();
+    const CURRENT_USER = "{{ username }}";
 </script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
 
 </body>
 </html>
