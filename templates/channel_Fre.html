@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
+    <meta charset="UTF-8">
     <title>French Reborn</title>
 </head>
 <body>
@@ -23,18 +24,26 @@
 </div>
 
 <script>
-let currentUser = "{{ username }}";
+const chat = document.getElementById("chat");
+const msg = document.getElementById("msg");
+const adminControls = document.getElementById("admin-controls");
+const lazyControls = document.getElementById("lazy-controls");
+
+const currentUser = "{{ username }}";
 
 function load(){
-    fetch("/messages").then(r=>r.json()).then(d=>{
-        chat.innerHTML="";
-        d.forEach(m=>{
-            chat.innerHTML+=`<div><b>${m.user}</b>: ${m.content}</div>`;
+    fetch("/messages")
+        .then(r => r.json())
+        .then(d => {
+            chat.innerHTML = "";
+            d.forEach(m => {
+                chat.innerHTML += `<div><b>${m.user}</b>: ${m.content}</div>`;
+            });
         });
-    });
 }
 
 function send(){
+    if(!msg.value.trim()) return;
     fetch("/send",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
@@ -45,33 +54,62 @@ function send(){
 
 function mute(){
     const u = prompt("Utilisateur à mute");
-    fetch("/mute_user",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:u})});
+    if(!u) return;
+    fetch("/mute_user",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({username:u})
+    });
 }
 
 function unmute(){
     const u = prompt("Utilisateur à unmute");
-    fetch("/unmute_user",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:u})});
+    if(!u) return;
+    fetch("/unmute_user",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({username:u})
+    });
 }
 
 function createRole(){
     const name = prompt("Nom du rôle");
-    const perms = prompt("Permissions (mute,unmute)").split(",");
-    fetch("/create_role",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,permissions:perms})});
+    if(!name) return;
+    const perms = prompt("Permissions (mute,unmute)")?.split(",") || [];
+    fetch("/create_role",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({name, permissions: perms})
+    });
 }
 
 async function assignRole(){
     const user = prompt("Utilisateur");
+    if(!user) return;
     const roles = await fetch("/roles").then(r=>r.json());
-    const choice = prompt(roles.map(r=>`${r.id}:${r.name}`).join("\n"));
-    fetch("/assign_role",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:user,role_id:choice})});
+    const choice = prompt(
+        roles.map(r => `${r.id}:${r.name}`).join("\n")
+    );
+    if(!choice) return;
+    fetch("/assign_role",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({username:user, role_id:choice})
+    });
 }
 
-fetch("/my_permissions").then(r=>r.json()).then(p=>{
-    if(p.includes("mute")) adminControls.style.display="block";
-    if(currentUser==="Lazyprobg") lazyControls.style.display="block";
-});
+fetch("/my_permissions")
+    .then(r => r.json())
+    .then(p => {
+        if(p.includes("mute") || p.includes("unmute")){
+            adminControls.style.display = "block";
+        }
+        if(currentUser === "Lazyprobg"){
+            lazyControls.style.display = "block";
+        }
+    });
 
-setInterval(load,1000);
+setInterval(load, 1500);
 load();
 </script>
 
