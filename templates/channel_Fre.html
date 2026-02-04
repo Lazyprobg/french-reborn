@@ -1,33 +1,158 @@
 <!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>French Reborn - Chat</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
 
-<div class="chat-container">
-    <h3>Connecté en tant que {{ username }}</h3>
+<html lang="fr">  
+<head>  
+<meta charset="UTF-8">  
+<meta name="viewport" content="width=device-width, initial-scale=1.0">  
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">  
+<title>French Reborn - Chat</title>  
+</head>  
+<body>  <div class="chat-container">  
+    <div id="members-count" style="margin-bottom:10px;font-weight:bold;"></div>  
+    <div class="messages-container" id="messages-container"></div>  <div class="chat-input-container">  
+    <button class="emoji-button" id="emoji-button">😀</button>  
+    <input type="text" id="message-input" placeholder="Écris un message..." autocomplete="off">  
+    <button class="send-button" id="send-button">Envoyer</button>  
+</div>  
 
-    <div class="messages-container" id="messages-container"></div>
-
-    <div class="chat-input-container">
-        <input
-            type="text"
-            id="message-input"
-            placeholder="Écrire un message..."
-        >
-        <button class="send-button" id="send-button">Envoyer</button>
-        <button class="emoji-button" id="emoji-button">😀</button>
-    </div>
+<div id="admin-controls" style="margin-top:10px;display:none;">  
+    <button id="mute-btn">🤐 Mute</button>  
+    <button id="unmute-btn">🔓 Unmute</button>  
 </div>
 
-<script>
-    const CURRENT_USER = "{{ username }}";
-</script>
-<script src="{{ url_for('static', filename='script.js') }}"></script>
-
-</body>
+</div>  <script>  
+const messagesContainer = document.getElementById("messages-container");  
+const input = document.getElementById("message-input");  
+const sendButton = document.getElementById("send-button");  
+const emojiButton = document.getElementById("emoji-button");  
+const membersCountDiv = document.getElementById("members-count");  
+const adminControls = document.getElementById("admin-controls");  
+const muteBtn = document.getElementById("mute-btn");  
+const unmuteBtn = document.getElementById("unmute-btn");  
+  
+let lastMessageDate = null;  
+  
+function formatDate(date) {  
+    const d = date.getDate().toString().padStart(2,"0");  
+    const m = (date.getMonth()+1).toString().padStart(2,"0");  
+    const y = date.getFullYear();  
+    const h = date.getHours().toString().padStart(2,"0");  
+    const min = date.getMinutes().toString().padStart(2,"0");  
+    return `${d}/${m}/${y} ${h}:${min}`;  
+}  
+  
+function sameMinute(d1,d2){  
+    if(!d1||!d2) return false;  
+    return d1.getFullYear()===d2.getFullYear() &&  
+           d1.getMonth()===d2.getMonth() &&  
+           d1.getDate()===d2.getDate() &&  
+           d1.getHours()===d2.getHours() &&  
+           d1.getMinutes()===d2.getMinutes();  
+}  
+  
+function addMessage(username, role, text, date=new Date()){  
+    if(!sameMinute(lastMessageDate,date)){  
+        const dateDiv = document.createElement("div");  
+        dateDiv.className = "message-date";  
+        dateDiv.textContent = formatDate(date);  
+        messagesContainer.appendChild(dateDiv);  
+    }  
+    lastMessageDate = date;  
+  
+    const messageDiv = document.createElement("div");  
+    messageDiv.className = "message";  
+    let roleColor = role==="Propriétaire" ? "red" : "#0d47a1";  
+  
+    messageDiv.innerHTML = `  
+        <div class="avatar"></div>  
+        <div class="message-content">  
+            <div class="role" style="color:${roleColor}">${role}</div>  
+            <div class="username">${username}</div>  
+            <div class="text">${text}</div>  
+        </div>  
+    `;  
+    messagesContainer.appendChild(messageDiv);  
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;  
+}  
+  
+function fetchMessages() {  
+    fetch("/messages")  
+        .then(res => res.json())  
+        .then(data => {  
+            messagesContainer.innerHTML = "";  
+            data.forEach(msg => addMessage(msg.username, msg.role, msg.content));  
+        });  
+  
+    fetch("/province_count")  
+        .then(res=>res.json())  
+        .then(data=>{  
+            membersCountDiv.textContent = "Nombre de membres: " + data.count;  
+        });  
+}  
+  
+setInterval(fetchMessages, 2000);  
+document.addEventListener("DOMContentLoaded", fetchMessages);  
+  
+function sendMessage(){  
+    const text = input.value.trim();  
+    if(!text) return;  
+    fetch("/send_message",{  
+        method:"POST",  
+        headers:{"Content-Type":"application/json"},  
+        body: JSON.stringify({content:text})  
+    })  
+    .then(res=>res.json())  
+    .then(data=>{  
+        if(data.success){  
+            input.value="";  
+            fetchMessages();  
+        }else{  
+            alert("Erreur: "+(data.error||"Impossible d'envoyer le message"));  
+        }  
+    });  
+}  
+  
+sendButton.addEventListener("click", sendMessage);  
+input.addEventListener("keypress", e => { if(e.key==="Enter"){ e.preventDefault(); sendMessage(); } });  
+  
+emojiButton.addEventListener("click", ()=>{  
+    const emojiList = ["😀","😂","😍","😎","👍","💙","🚀","✈️"];  
+    const chosen = prompt("Choisis un emoji:\n"+emojiList.join(" "));  
+    if(chosen){  
+        input.value+=chosen;  
+        input.focus();  
+    }  
+});  
+  
+const currentUser = "{{ current_user }}";  
+if(currentUser === "Lazyprobg") {  
+    adminControls.style.display = "block";  
+  
+    muteBtn.addEventListener("click", ()=>{  
+        const username = prompt("Quel membre mute ?");  
+        if(!username) return;  
+        fetch("/mute_user", {  
+            method:"POST",  
+            headers: {"Content-Type":"application/json"},  
+            body: JSON.stringify({username})  
+        }).then(r=>r.json()).then(res=>{  
+            alert(res.success ? "Mute effectué" : res.error);  
+            fetchMessages();  
+        });  
+    });  
+  
+    unmuteBtn.addEventListener("click", ()=>{  
+        const username = prompt("Quel membre unmute ?");  
+        if(!username) return;  
+        fetch("/unmute_user", {  
+            method:"POST",  
+            headers: {"Content-Type":"application/json"},  
+            body: JSON.stringify({username})  
+        }).then(r=>r.json()).then(res=>{  
+            alert(res.success ? "Unmute effectué" : res.error);  
+            fetchMessages();  
+        });  
+    });  
+}  
+</script>  </body>  
 </html>
