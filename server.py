@@ -32,6 +32,8 @@ db = SQLAlchemy(app)
 # ==========================
 
 class User(db.Model):
+    __tablename__ = "users"
+    
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(200), nullable=False)
@@ -48,7 +50,7 @@ class User(db.Model):
 
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     province = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
@@ -72,6 +74,40 @@ def home():
 @app.route("/menu")
 def menu():
     return render_template("menu.html")
+
+@app.route("/connexion", methods=["GET", "POST"])
+def connexion():
+    if request.method == "POST":
+        username = request.form.get("identifiant")
+        password = request.form.get("mot_de_passe")
+
+        user = User.query.filter_by(username=username).first()
+        if user and user.check_password(password):
+            session["username"] = user.username
+            return redirect(url_for("channel_fre"))
+
+        return redirect(url_for("connexion"))
+
+    return render_template("connexion.html")
+
+@app.route("/inscription", methods=["GET", "POST"])
+def inscription():
+    if request.method == "POST":
+        username = request.form.get("nom")
+        password = request.form.get("mot_de_passe")
+
+        if User.query.filter_by(username=username).first():
+            return redirect(url_for("inscription"))
+
+        user = User(username=username, role="Citoyen", province="French_Reborn")
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+
+        session["username"] = user.username
+        return redirect(url_for("channel_fre"))
+
+    return render_template("inscription.html")
 
 @app.route("/channel/French_Reborn")
 def channel_fre():
@@ -122,3 +158,4 @@ def get_messages():
         }
         for m in messages if m.user.username not in muted
     ])
+
