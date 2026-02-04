@@ -1,49 +1,21 @@
 <!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Connexion – French Reborn</title>
 
-    <!-- Responsive mobile -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Style principal -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-
-<body>
-
-    <div class="container">
-        <h1 class="title">Connexion</h1>
-
-        <!-- FORMULAIRE DE CONNEXION -->
-        <form action="{{ url_for('login') }}" method="POST" autocomplete="off">
-
-            <input
-                type="text"
-                name="username"
-                placeholder="Nom d'utilisateur"
-                required
-            >
-
-            <input
-                type="password"
-                name="password"
-                placeholder="Mot de passe"
-                required
-            >
-
-            <button type="submit" class="welcome-button">
-                Se connecter
-            </button>
-        </form>
-
-        <!-- LIEN INSCRIPTION (HORS FORMULAIRE) -->
-        <p class="switch-auth">
-            Pas encore inscrit ?
-            <a href="{{ url_for('inscription') }}">Créer un compte</a>
-        </p>
-    </div>
-
-</body>
-</html>
+<html lang="fr">  
+<head>  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <meta charset="UTF-8">  
+    <title>Connexion - French Reborn</title>  
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">  
+</head>  
+<body>  
+    <div class="container">  
+        <h1 class="title">Connexion</h1>  
+        <form action="{{ url_for('connexion') }}" method="POST">  
+            <input type="text" name="identifiant" placeholder="Nom d'utilisateur" required style="padding:10px; margin-bottom:20px; width:80%; font-size:1em; border-radius:5px; border:1px solid #ccc;"><br>  
+            <input type="password" name="mot_de_passe" placeholder="Mot de passe" required style="padding:10px; margin-bottom:30px; width:80%; font-size:1em; border-radius:5px; border:1px solid #ccc;"><br>  
+            <button type="submit" class="welcome-button">Se connecter</button>  
+        </form>  
+        <p style="margin-top:20px;">Pas encore inscrit ? <a href="{{ url_for('inscription') }}">Créer un compte</a></p>  
+    </div>  
+</body>  
+    </html>
