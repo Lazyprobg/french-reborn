@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+from sqlalchemy import text
 import os
 
 # ==========================
@@ -62,6 +63,17 @@ class Mute(db.Model):
 
 with app.app_context():
     db.create_all()
+
+    # Ajout colonne province si absente (Render Free compatible)
+    try:
+        db.session.execute(text("""
+            ALTER TABLE users
+            ADD COLUMN province VARCHAR(100)
+        """))
+        db.session.commit()
+        print("✔ Colonne users.province ajoutée")
+    except Exception:
+        db.session.rollback()
 
 # ==========================
 # ROUTES PRINCIPALES
@@ -158,4 +170,5 @@ def get_messages():
         }
         for m in messages if m.user.username not in muted
     ])
+
 
