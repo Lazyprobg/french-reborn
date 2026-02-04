@@ -1,107 +1,124 @@
-from flask import Flask, render_template, request, redirect, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import os
 
-from models import db, User, Message, MutedUser
+# ==========================
+# INITIALISATION
+# ==========================
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
+app.secret_key = os.environ.get("SECRET_KEY", "super-secret-key")
 
-database_url = os.environ.get("DATABASE_URL")
-if database_url and database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql://", 1)
+# ==========================
+# DATABASE
+# ==========================
 
-app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+uri = os.environ.get("DATABASE_URL")
+if not uri:
+    uri = "sqlite:///data.db"
+
+if uri.startswith("postgres://"):
+    uri = uri.replace("postgres://", "postgresql://", 1)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = uri
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-db.init_app(app)
+db = SQLAlchemy(app)
+
+# ==========================
+# MODELS
+# ==========================
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password_hash = db.Column(db.String(200), nullable=False)
+    role = db.Column(db.String(50), default="Citoyen")
+    province = db.Column(db.String(100))
+
+    messages = db.relationship("Message", backref="user", lazy=True)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    province = db.Column(db.String(100), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Mute(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    province = db.Column(db.String(100), nullable=False)
+    muted_username = db.Column(db.String(80), nullable=False)
 
 with app.app_context():
     db.create_all()
 
-# ================= AUTH =================
+# ==========================
+# ROUTES PRINCIPALES
+# ==========================
 
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
+@app.route("/")
+def home():
+    return render_template("index.html")
 
-        user = User.query.filter_by(username=username).first()
-        if not user or not user.check_password(password):
-            return render_template("connexion.html")
+@app.route("/menu")
+def menu():
+    return render_template("menu.html")
 
-        session["username"] = user.username
-        session["province"] = user.province
-        return redirect("/channel")
-
-    return render_template("connexion.html")
-
-
-@app.route("/inscription", methods=["GET", "POST"])
-def inscription():
-    if request.method == "POST":
-        username = request.form.get("nom")
-        password = request.form.get("mot_de_passe")
-
-        if User.query.filter_by(username=username).first():
-            return "Utilisateur déjà existant", 400
-
-        user = User(username=username, province="French Reborn")
-        user.set_password(password)
-
-        db.session.add(user)
-        db.session.commit()
-
-        session["username"] = user.username
-        session["province"] = user.province
-        return redirect("/channel")
-
-    return render_template("inscription.html")
-
-
-@app.route("/channel")
-def channel():
+@app.route("/channel/French_Reborn")
+def channel_fre():
     if "username" not in session:
-        return redirect("/login")
-    return render_template("channel_Fre.html", username=session["username"])
+        return redirect(url_for("connexion"))
 
+    user = User.query.filter_by(username=session["username"]).first()
+    return render_template(
+        "channel_Fre.html",
+        user_role=user.role,
+        current_user=user.username
+    )
 
-@app.route("/messages")
-def messages():
-    muted = {m.username for m in MutedUser.query.all()}
-    msgs = Message.query.order_by(Message.timestamp.asc()).all()
+# ==========================
+# ROUTES MESSAGES
+# ==========================
 
-    return jsonify([
-        {
-            "username": m.author.username,
-            "content": m.content,
-            "timestamp": m.timestamp.isoformat()
-        }
-        for m in msgs if m.author.username not in muted
-    ])
-
-
-@app.route("/send", methods=["POST"])
-def send():
+@app.route("/send_message", methods=["POST"])
+def send_message():
     if "username" not in session:
-        return "", 403
-
-    if MutedUser.query.filter_by(username=session["username"]).first():
-        return "", 403
+        return jsonify({"success": False}), 401
 
     content = request.json.get("content", "").strip()
     if not content:
-        return "", 400
+        return jsonify({"success": False}), 400
 
     user = User.query.filter_by(username=session["username"]).first()
-
-    msg = Message(
-        content=content,
-        province=session["province"],
-        author=user
-    )
-
-    db.session.add(msg)
+    message = Message(user_id=user.id, province=user.province, content=content)
+    db.session.add(message)
     db.session.commit()
-    return "", 204
+    return jsonify({"success": True})
+
+@app.route("/messages")
+def get_messages():
+    if "username" not in session:
+        return jsonify([])
+
+    user = User.query.filter_by(username=session["username"]).first()
+    muted = [m.muted_username for m in Mute.query.filter_by(province=user.province)]
+    messages = Message.query.filter_by(province=user.province).order_by(Message.timestamp)
+
+    return jsonify([
+        {
+            "username": m.user.username,
+            "role": m.user.role,
+            "content": m.content,
+            "timestamp": m.timestamp.isoformat()
+        }
+        for m in messages if m.user.username not in muted
+    ])
