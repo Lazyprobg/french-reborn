@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-from sqlalchemy import text
+from sqlalchemy import text, inspect
 import os
 
 # ==========================
@@ -27,6 +27,25 @@ app.config["SQLALCHEMY_DATABASE_URI"] = uri
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
+
+@app.before_first_request
+def init_database():
+    inspector = inspect(db.engine)
+
+    if "users" not in inspector.get_table_names():
+        db.create_all()
+        return
+
+    columns = [c["name"] for c in inspector.get_columns("users")]
+
+    if "province" not in columns:
+        db.session.execute(text(
+            "ALTER TABLE users ADD COLUMN province VARCHAR(100)"
+        ))
+        db.session.execute(text(
+            "UPDATE users SET province = 'French Reborn' WHERE province IS NULL"
+        ))
+        db.session.commit()
 
 # ==========================
 # MODELS
@@ -63,17 +82,6 @@ class Mute(db.Model):
 
 with app.app_context():
     db.create_all()
-
-    # Ajout colonne province si absente (Render Free compatible)
-    try:
-        db.session.execute(text("""
-            ALTER TABLE users
-            ADD COLUMN province VARCHAR(100)
-        """))
-        db.session.commit()
-        print("✔ Colonne users.province ajoutée")
-    except Exception:
-        db.session.rollback()
 
 # ==========================
 # ROUTES PRINCIPALES
@@ -170,5 +178,6 @@ def get_messages():
         }
         for m in messages if m.user.username not in muted
     ])
+
 
 
