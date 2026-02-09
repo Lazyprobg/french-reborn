@@ -1,246 +1,60 @@
-/* ============================= */
-/* RESET + BASE */
-/* ============================= */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #0d47a1;
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a3cff, #6ecbff);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
 }
 
-/* ============================= */
-/* CONTAINER GÉNÉRIQUE (LOGIN, INSCRIPTION, CHAT) */
-/* ============================= */
-.container, .chat-container {
-    width: 100%;
-    max-width: 450px;
-    text-align: center;
-    background: rgba(255, 255, 255, 0.25);
-    padding: 50px;
-    border-radius: 20px;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    animation: fadeInUp 0.8s ease-out;
+.container {
+  text-align: center;
+  animation: fadeIn 1s ease;
 }
 
-/* ============================= */
-/* TITRES */
-/* ============================= */
-.title {
-    color: #2196f3;
-    font-size: 2.6em;
-    margin-bottom: 35px;
-    -webkit-text-stroke: 1.5px #0d47a1;
-    text-shadow: 2px 2px 6px rgba(13, 71, 161, 0.3);
-    letter-spacing: 2px;
+h1 {
+  font-size: 3rem;
+  margin-bottom: 30px;
 }
 
-/* ============================= */
-/* BOUTONS */
-/* ============================= */
-.welcome-button, .send-button, .emoji-button {
-    display: inline-block;
-    text-decoration: none;
-    background-color: #87ceeb;
-    border: 3px solid #00ffff;
-    color: #0d47a1;
-    padding: 14px 45px;
-    font-size: 1.2em;
-    font-weight: bold;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    box-shadow: 0 6px 20px rgba(0, 255, 255, 0.3);
+input {
+  display: block;
+  margin: 10px auto;
+  padding: 12px;
+  width: 250px;
+  border-radius: 8px;
+  border: none;
 }
 
-.welcome-button:hover, .send-button:hover, .emoji-button:hover {
-    background-color: #b3e5fc;
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(0, 255, 255, 0.5);
+button {
+  margin: 10px;
+  padding: 12px 25px;
+  border-radius: 25px;
+  border: none;
+  background-color: #b3e5ff;
+  color: #003366;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
 }
 
-.welcome-button:active, .send-button:active, .emoji-button:active {
-    transform: translateY(0);
-    box-shadow: 0 4px 10px rgba(0, 255, 255, 0.3);
+button:hover {
+  transform: scale(1.05);
+  background-color: #d9f3ff;
 }
 
-/* ============================= */
-/* ANIMATION */
-/* ============================= */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(25px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+button.disabled {
+  background-color: red;
+  cursor: not-allowed;
 }
 
-/* ============================= */
-/* MESSAGES CHAT */
-/* ============================= */
-.messages-container {
-    flex: 1;
-    overflow-y: auto;
-    padding: 15px;
-}
-
-.message-date {
-    text-align: center;
-    font-size: 0.8em;
-    color: #1565c0;
-    margin: 18px 0;
-    opacity: 0.8;
-}
-
-.message {
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: 16px;
-}
-
-.avatar {
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #0d47a1, #1976d2);
-    margin-right: 12px;
-    flex-shrink: 0;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-.message-content {
-    background: rgba(255, 255, 255, 0.65);
-    border-radius: 14px;
-    padding: 10px 14px;
-    max-width: 72%;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-}
-
-.role {
-    font-size: 0.7em;
-    font-weight: bold;
-    color: #0d47a1;
-    text-transform: uppercase;
-    opacity: 0.85;
-}
-
-.role.owner {
-    color: red; /* Propriétaire en rouge */
-}
-
-.username {
-    font-size: 0.85em;
-    font-weight: bold;
-    color: #1565c0;
-    margin-bottom: 4px;
-}
-
-.text {
-    font-size: 0.95em;
-    color: #08306b;
-    line-height: 1.4em;
-    word-wrap: break-word;
-}
-
-/* ============================= */
-/* BARRE D'ENVOI CHAT */
-/* ============================= */
-.chat-input-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding-top: 15px;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-#message-input {
-    flex: 1;
-    padding: 12px 14px;
-    border-radius: 10px;
-    border: 1px solid rgba(13, 71, 161, 0.3);
-    font-size: 1em;
-    outline: none;
-}
-
-#message-input:focus {
-    border-color: #2196f3;
-}
-
-/* ============================= */
-/* BOUTONS ADMIN (MUTE / UNMUTE) */
-/* ============================= */
-#admin-controls {
-    display: flex;
-    gap: 5px;
-    margin-bottom: 10px;
-}
-
-#mute-btn, #unmute-btn {
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    font-size: 14px;
-    color: white;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-#mute-btn {
-    background-color: #ff5722;
-}
-
-#mute-btn:hover {
-    background-color: #e64a19;
-}
-
-#unmute-btn {
-    background-color: #4caf50;
-}
-
-#unmute-btn:hover {
-    background-color: #388e3c;
-}
-
-/* ============================= */
-/* RESPONSIVE MOBILE */
-/* ============================= */
-@media (max-width: 768px) {
-    .container, .chat-container {
-        width: 95%;
-        max-width: 100%;
-        padding: 20px;
-        border-radius: 15px;
-    }
-
-    .chat-input-container {
-        flex-direction: column;
-        gap: 5px;
-    }
-
-    #message-input {
-        width: 100% !important;
-        font-size: 1em !important;
-        padding: 12px !important;
-    }
-
-    .send-button, .emoji-button {
-        width: 100%;
-    }
-
-    .messages-container {
-        max-height: calc(100vh - 180px);
-    }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
 }
