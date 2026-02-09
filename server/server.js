@@ -1,61 +1,51 @@
-// server/server.js
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
-import { db } from "./db.js"; // Assure-toi que db.js exporte bien `export const db`
+import { db } from "./db.js"; // ton fichier db
 
-// ----------------- Variables globales pour __dirname -----------------
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ----------------- Création de l'application Express -----------------
 const app = express();
 
-// ----------------- Middleware -----------------
+// Middleware pour parser JSON et form data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Sert tous les fichiers statiques du dossier public (CSS, JS, images, HTML)
-app.use(express.static(path.join(__dirname, "../public")));
+// Sert les fichiers CSS, JS, images dans static/
+app.use("/static", express.static(path.join(__dirname, "../public/static")));
 
-// ----------------- Routes principales -----------------
-
-// Page d'accueil
+// Routes HTML depuis templates/
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../public/index.html"));
+  res.sendFile(path.join(__dirname, "../public/templates/index.html"));
 });
 
-// Menu
 app.get("/menu.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "../public/menu.html"));
+  res.sendFile(path.join(__dirname, "../public/templates/menu.html"));
 });
 
-// Connexion
 app.get("/connexion.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "../public/connexion.html"));
+  res.sendFile(path.join(__dirname, "../public/templates/connexion.html"));
 });
 
-// Inscription
 app.get("/inscription.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "../public/inscription.html"));
+  res.sendFile(path.join(__dirname, "../public/templates/inscription.html"));
 });
 
-// More info
 app.get("/moreinfo.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "../public/moreinfo.html"));
+  res.sendFile(path.join(__dirname, "../public/templates/moreinfo.html"));
 });
 
-// Choose province
 app.get("/choosep.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "../public/choosep.html"));
+  res.sendFile(path.join(__dirname, "../public/templates/choosep.html"));
 });
 
-// ----------------- Test route -----------------
+// Route test
 app.get("/test", (req, res) => {
   res.send("Server is running!");
 });
 
-// ----------------- Démarrage du serveur -----------------
+// Démarrage du serveur
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Serveur lancé sur le port ${PORT}`);
