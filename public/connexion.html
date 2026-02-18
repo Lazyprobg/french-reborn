@@ -1,23 +1,22 @@
-<input id="username" placeholder="Nom">
-<input id="password" type="password" placeholder="Mot de passe">
-<button onclick="login()">Se connecter</button>
-<button onclick="location.href='inscription.html'">S'inscrire</button>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Connexion - French Reborn</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
 
-<script>
-async function login(){
-  const res = await fetch('/api/login',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      username:username.value,
-      password:password.value
-    })
-  });
-  const data=await res.json();
-  if(data.token){
-    localStorage.setItem("token",data.token);
-    if(!data.province_id) location.href="choosep.html";
-    else location.href="province.html?id="+data.province_id;
-  }else alert(data.error);
-}
-</script>
+<div class="container">
+  <h1>Connexion</h1>
+
+  <input id="username" placeholder="Nom"><br><br>
+  <input id="password" type="password" placeholder="Mot de passe"><br><br>
+
+  <button onclick="login()">Se connecter</button>
+  <button onclick="location.href='inscription.html'">S'inscrire</button>
+</div>
+
+<script src="js/main.js"></script>
+</body>
+</html>
