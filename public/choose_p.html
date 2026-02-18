@@ -1,6 +1,18 @@
-<div class="container">
-  <h1>Choisi ta province</h1>
-  <button onclick="location.href='provinces/frenchreborn.html'">
-    French Reborn
-  </button>
-</div>
+<h1>Choisi ta province</h1>
+<div id="provinces"></div>
+
+<script>
+async function load(){
+  const res=await fetch('/api/provinces',{
+    headers:{Authorization:localStorage.getItem("token")}
+  });
+  const provinces=await res.json();
+  provinces.forEach(p=>{
+    const btn=document.createElement("button");
+    btn.innerText=p.name;
+    btn.onclick=()=>location.href="province.html?id="+p.id;
+    document.body.appendChild(btn);
+  });
+}
+load();
+</script>
