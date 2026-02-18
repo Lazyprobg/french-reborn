@@ -1,19 +1,21 @@
-<input id="username" placeholder="Nom">
-<input id="password" type="password" placeholder="Mot de passe">
-<button onclick="register()">S'inscrire</button>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Inscription - French Reborn</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
 
-<script>
-async function register(){
-  const res=await fetch('/api/register',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      username:username.value,
-      password:password.value
-    })
-  });
-  const data=await res.json();
-  if(data.success) location.href="connexion.html";
-  else alert(data.error);
-}
-</script>
+<div class="container">
+  <h1>Inscription</h1>
+
+  <input id="username" placeholder="Nom"><br><br>
+  <input id="password" type="password" placeholder="Mot de passe"><br><br>
+
+  <button onclick="register()">S'inscrire</button>
+</div>
+
+<script src="js/main.js"></script>
+</body>
+</html>
