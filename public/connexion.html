@@ -1,21 +1,23 @@
-<!DOCTYPE html>
+<input id="username" placeholder="Nom">
+<input id="password" type="password" placeholder="Mot de passe">
+<button onclick="login()">Se connecter</button>
+<button onclick="location.href='inscription.html'">S'inscrire</button>
 
-<html lang="fr">  
-<head>  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <meta charset="UTF-8">  
-    <title>Connexion - French Reborn</title>  
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">  
-</head>  
-<body>  
-    <div class="container">  
-        <h1 class="title">Connexion</h1>  
-        <form action="{{ url_for('connexion') }}" method="POST">  
-            <input type="text" name="identifiant" placeholder="Nom d'utilisateur" required style="padding:10px; margin-bottom:20px; width:80%; font-size:1em; border-radius:5px; border:1px solid #ccc;"><br>  
-            <input type="password" name="mot_de_passe" placeholder="Mot de passe" required style="padding:10px; margin-bottom:30px; width:80%; font-size:1em; border-radius:5px; border:1px solid #ccc;"><br>  
-            <button type="submit" class="welcome-button">Se connecter</button>  
-        </form>  
-        <p style="margin-top:20px;">Pas encore inscrit ? <a href="{{ url_for('inscription') }}">Créer un compte</a></p>  
-    </div>  
-</body>  
-    </html>
+<script>
+async function login(){
+  const res = await fetch('/api/login',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      username:username.value,
+      password:password.value
+    })
+  });
+  const data=await res.json();
+  if(data.token){
+    localStorage.setItem("token",data.token);
+    if(!data.province_id) location.href="choosep.html";
+    else location.href="province.html?id="+data.province_id;
+  }else alert(data.error);
+}
+</script>
