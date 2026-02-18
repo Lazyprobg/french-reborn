@@ -1,20 +1,19 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta charset="UTF-8">
-    <title>Inscription - French Reborn</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <div class="container">
-        <h1 class="title">Inscription</h1>
-        <form action="{{ url_for('inscription') }}" method="POST">
-            <input type="text" name="nom" placeholder="Nom d'utilisateur" required style="padding:10px; margin-bottom:20px; width:80%; font-size:1em; border-radius:5px; border:1px solid #ccc;"><br>
-            <input type="password" name="mot_de_passe" placeholder="Mot de passe" required style="padding:10px; margin-bottom:30px; width:80%; font-size:1em; border-radius:5px; border:1px solid #ccc;"><br>
-            <button type="submit" class="welcome-button">Créer</button>
-        </form>
-        <p style="margin-top:20px;">Déjà inscrit ? <a href="{{ url_for('connexion') }}">Se connecter</a></p>
-    </div>
-</body>
-</html>
+<input id="username" placeholder="Nom">
+<input id="password" type="password" placeholder="Mot de passe">
+<button onclick="register()">S'inscrire</button>
+
+<script>
+async function register(){
+  const res=await fetch('/api/register',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      username:username.value,
+      password:password.value
+    })
+  });
+  const data=await res.json();
+  if(data.success) location.href="connexion.html";
+  else alert(data.error);
+}
+</script>
