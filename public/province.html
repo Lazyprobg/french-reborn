@@ -1,59 +1,20 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Province - French Reborn</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<h1>Conversation</h1>
+
 <div id="messages"></div>
-<input id="msg">
-<button onclick="send()">✈️</button>
 
-<script>
-const params=new URLSearchParams(location.search);
-const id=params.get("id");
+<br>
+<input id="msg" placeholder="Écris ton message...">
+<button onclick="sendMessage()">✈️</button>
 
-async function load(){
-  const res=await fetch('/api/messages/'+id,{
-    headers:{Authorization:localStorage.getItem("token")}
-  });
-  const messages=await res.json();
-  messagesDiv.innerHTML="";
-  let lastTime=null;
-
-  messages.forEach(m=>{
-    const time=new Date(m.created_at);
-    const showTime=!lastTime || 
-      (time-lastTime)>180000;
-
-    if(showTime){
-      const dateDiv=document.createElement("div");
-      dateDiv.innerText=time.toLocaleString();
-      messagesDiv.appendChild(dateDiv);
-    }
-
-    const div=document.createElement("div");
-    div.className="message";
-    div.innerHTML=`
-      <strong>${m.role}</strong><br>
-      <b>${m.username}</b><br>
-      ${m.content}
-    `;
-    messagesDiv.appendChild(div);
-
-    lastTime=time;
-  });
-}
-
-async function send(){
-  await fetch('/api/send',{
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      Authorization:localStorage.getItem("token")
-    },
-    body:JSON.stringify({
-      province_id:id,
-      content:msg.value
-    })
-  });
-  msg.value="";
-  load();
-}
-
-load();
-setInterval(load,2000);
-</script>
+<script src="js/main.js"></script>
+</body>
+</html>
